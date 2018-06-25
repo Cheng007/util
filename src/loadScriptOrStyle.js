@@ -1,7 +1,7 @@
 /**
  * 获取数据类型
  * @param {*} data
- * @return 'string' | 'number' | 'object' | 'array' | 'function' | 'undefined' | 'null' | 'date' | 'regexp' | 'error'
+ * @return 'string' | 'number' | 'object' | 'array' | 'function' | 'undefined' | 'null' | 'date' | 'regexp' | 'error' | 'map' | 'weakmap' | 'boolean' | 'math' | 'set' | 'weakset' | 'json'
  */
 function type (data) {
   return Object.prototype.toString.call(data).slice(8, -1).toLowerCase()
