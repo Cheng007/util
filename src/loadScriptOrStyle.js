@@ -3,9 +3,9 @@
  * @param {*} data
  * @return 'string' | 'number' | 'object' | 'array' | 'function' | 'undefined' | 'null' | 'date' | 'regexp' | 'error' | 'map' | 'weakmap' | 'boolean' | 'math' | 'set' | 'weakset' | 'json'
  */
-function type (data) {
+/* function type (data) {
   return Object.prototype.toString.call(data).slice(8, -1).toLowerCase()
-}
+} */
 
 /**
  * 文件是否已加载（js 或 css）
@@ -48,10 +48,10 @@ function loadFile (src, type = 0) {
  * @return {Promise<T>}
  */
 async function loadScript (src, isSeries = true) {
-  if (type(src) === 'string') {
+  if (typeof src === 'string') {
     return loadFile(src, 0)
   }
-  if (type(src) === 'array') {
+  if (Array.isArray(src) === 'array') {
     if (isSeries) {
       for (let i = 0; i < src.length; i++) {
         await loadFile(src[i], 0)
@@ -67,10 +67,10 @@ async function loadScript (src, isSeries = true) {
  * @param {String | String[]} src 文件地址
  */
 function loadStyle (src) {
-  if (type(src) === 'string') {
+  if (typeof src === 'string') {
     return loadFile(src, 1)
   }
-  if (type(src) === 'array') {
+  if (Array.isArray(src) === 'array') {
     return Promise.all(src.map(i => loadFile(i, 1)))
   }
 }
