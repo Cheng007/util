@@ -51,7 +51,7 @@ async function loadScript (src, isSeries = true) {
   if (typeof src === 'string') {
     return loadFile(src, 0)
   }
-  if (Array.isArray(src) === 'array') {
+  if (Array.isArray(src) === true) {
     if (isSeries) {
       for (let i = 0; i < src.length; i++) {
         await loadFile(src[i], 0)
@@ -70,7 +70,7 @@ function loadStyle (src) {
   if (typeof src === 'string') {
     return loadFile(src, 1)
   }
-  if (Array.isArray(src) === 'array') {
+  if (Array.isArray(src) === true) {
     return Promise.all(src.map(i => loadFile(i, 1)))
   }
 }
