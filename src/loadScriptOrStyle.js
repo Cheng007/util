@@ -1,13 +1,4 @@
 /**
- * 获取数据类型
- * @param {*} data
- * @return 'string' | 'number' | 'object' | 'array' | 'function' | 'undefined' | 'null' | 'date' | 'regexp' | 'error' | 'map' | 'weakmap' | 'boolean' | 'math' | 'set' | 'weakset' | 'json'
- */
-/* function type (data) {
-  return Object.prototype.toString.call(data).slice(8, -1).toLowerCase()
-} */
-
-/**
  * 文件是否已加载（js 或 css）
  * @param {String} src 文件地址
  * @param {Number} type文件类型 0-js 1-css
