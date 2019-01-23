@@ -7,7 +7,7 @@
  */
 function getNodePathFromTree(id, tree = [], idKey = 'id', childrenKey = 'children') {
   const path = []
-  const findNodes = nodes => {
+  const findPath = nodes => {
     for(let i = 0, len = nodes.length; i < len; i++) {
       const node = nodes[i]
       if (node[idKey] === id) {
@@ -17,7 +17,7 @@ function getNodePathFromTree(id, tree = [], idKey = 'id', childrenKey = 'childre
         const children = node[childrenKey]
         if (children && children.length) {
           path.push(node)
-          const hasFind = findNodes(children)
+          const hasFind = findPath(children)
           if (!hasFind) {
             path.pop()
           } else {
@@ -27,7 +27,7 @@ function getNodePathFromTree(id, tree = [], idKey = 'id', childrenKey = 'childre
       }
     }
   }
-  findNodes(tree)
+  findPath(tree)
   return path
 }
 
