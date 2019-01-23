@@ -9,14 +9,14 @@ function getNodePathFromTree(id, tree = [], idKey = 'id', childrenKey = 'childre
   const path = []
   const findNodes = nodes => {
     for(let i = 0, len = nodes.length; i < len; i++) {
-      const item = nodes[i]
-      if (item[idKey] === id) {
-        path.push(item)
+      const node = nodes[i]
+      if (node[idKey] === id) {
+        path.push(node)
         return true
       } else {
-        const children = item[childrenKey]
+        const children = node[childrenKey]
         if (children && children.length) {
-          path.push(item)
+          path.push(node)
           const hasFind = findNodes(children)
           if (!hasFind) {
             path.pop()
