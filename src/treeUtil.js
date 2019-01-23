@@ -30,3 +30,7 @@ function getNodePathFromTree(id, tree = [], idKey = 'id', childrenKey = 'childre
   findNodes(tree)
   return path
 }
+
+export {
+  getNodePathFromTree
+}
