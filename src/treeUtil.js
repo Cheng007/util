@@ -34,11 +34,11 @@ function getNodePathFromTree(id, tree = [], idKey = 'id', childrenKey = 'childre
 /**
  * 获取树中某节点
  * @param {string | number} id 节点ID
- * @param {*} tree 树
- * @param {*} idKey id字段名
- * @param {*} childrenKey 子节点字段名
+ * @param {array} tree 树
+ * @param {string} idKey id字段名
+ * @param {string} childrenKey 子节点字段名
  */
-function getNodeFromTree(id, tree, idKey = 'id', childrenKey = 'children') {
+function getNodeFromTree(id, tree = [], idKey = 'id', childrenKey = 'children') {
   const find = nodes => {
     for (let i = 0, len = nodes.length; i < len; i++) {
       const node = nodes[i]
@@ -56,7 +56,30 @@ function getNodeFromTree(id, tree, idKey = 'id', childrenKey = 'children') {
   return find(tree)
 }
 
+/**
+ * 获取树中所有叶子节点
+ * @param {array} tree 树
+ * @param {string} childrenKey 子节点字段名
+ */
+function getLeavesFromTree(tree = [], childrenKey = 'children') {
+  let leaves = []
+  const find = nodes => {
+    for (let i = 0, len = nodes.length; i < len; i++) {
+      const node = nodes[i]
+      const children = node[childrenKey]
+      if (children && children.length) {
+        find(children)
+      } else {
+        leaves.push(node)
+      }
+    }
+  }
+  find(tree)
+  return leaves
+}
+
 export {
   getNodePathFromTree,
-  getNodeFromTree
+  getNodeFromTree,
+  getLeavesFromTree
 }
