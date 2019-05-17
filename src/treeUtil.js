@@ -78,8 +78,54 @@ function getLeavesFromTree(tree = [], childrenKey = 'children') {
   return leaves
 }
 
+/**
+ * 树结构转一维数组
+ * @param {array} tree 树
+ * @param {string} childrenKey 子节点字段名
+ */
+function treeToFlat(tree = [], childrenKey = 'children') {
+  const flat = []
+  const toFlat = (tree) => {
+    tree.forEach(i => {
+      const children = i[childrenKey]
+      flat.push(i)
+      if (children && children.length) {
+        toFlat(children)
+      }
+    })
+  }
+  toFlat(tree)
+  return flat
+}
+
+/**
+ * 一维数组转树结构
+ * @param {array} flat 一维数组
+ * @param {string} idKey id字段名
+ * @param {string} childrenKey 子节点字段名
+ * @param {string} parentKey 父节点字段名
+ */
+function flatToTree(flat = [], idKey = 'id', childrenKey = 'children', parentKey = 'parentId') {
+  let tree = flat.filter(i => !i[parentKey])
+  let rest = flat.filter(i => i[parentKey])
+  const toTree = (tree = []) => {
+    tree.forEach(i => {
+      const children = rest.filter(restItem => restItem[parentKey] === i[idKey])
+      rest = rest.filter(restItem => restItem[parentKey] !== i[idKey])
+      if (children.length) {
+        i[childrenKey] = children
+        toTree(children)
+      }
+    })
+  }
+  toTree(tree)
+  return tree
+}
+
 export {
   getNodePathFromTree,
   getNodeFromTree,
-  getLeavesFromTree
+  getLeavesFromTree,
+  treeToFlat,
+  flatToTree,
 }
