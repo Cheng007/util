@@ -84,7 +84,18 @@ function getLeavesFromTree(tree = [], childrenKey = 'children') {
  * @param {string} childrenKey 子节点字段名
  */
 function treeToFlat(tree = [], childrenKey = 'children') {
-  return tree.reduce((acc, cur) => acc.concat(cur, cur[childrenKey] || []), [])
+  const flat = []
+  const toFlat = (tree) => {
+    tree.forEach(i => {
+      const children = i[childrenKey]
+      flat.push(i)
+      if (children && children.length) {
+        toFlat(children)
+      }
+    })
+  }
+  toFlat(tree)
+  return flat
 }
 
 /**
