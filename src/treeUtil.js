@@ -99,6 +99,42 @@ function flatToTree(flat = [], idKey = 'id', childrenKey = 'children', parentKey
   return tree
 }
 
+function flatToTree2(flat = [], idKey = 'id', childrenKey = 'children', parentKey = 'pid') {
+  flat = JSON.parse(JSON.stringify(flat))
+
+  const emptyFlag = [undefined, null, NaN]
+
+  const info = flat.reduce((prev, cur) => {
+    prev.set(cur[idKey], cur)
+     return prev
+  }, new Map())
+
+  let tree = []
+  let rest = []
+  
+  flat.forEach(i => {
+    //  找不到父节点的作为根
+    if (emptyFlag.includes(i[parentKey]) || !info.get(i[parentKey])) {
+      tree.push(i)
+    } else {
+      rest.push(i)
+    }
+  })
+
+  const toTree = (tree = []) => {
+    tree.forEach(i => {
+      const children = rest.filter(restItem => restItem[parentKey] === i[idKey])
+      rest = rest.filter(restItem => restItem[parentKey] !== i[idKey])
+      if (children.length) {
+        i[childrenKey] = children
+        toTree(children)
+      }
+    })
+  }
+  toTree(tree)
+  return tree
+}
+
 export {
   getNodePathFromTree,
   getNodeFromTree,
