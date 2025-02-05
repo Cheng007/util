@@ -3,11 +3,11 @@
  * @param {String} src 文件地址
  * @param {Number} type文件类型 0-js 1-css
  */
-function isFileLoaded (src, type = 0) {
+function isFileLoaded(src, type = 0) {
   const tagName = type === 0 ? 'script' : 'link'
   const attribute = type === 0 ? 'src' : 'href'
   const files = Array.from(document.getElementsByTagName(tagName))
-  return files.includes(i => i.getAttribute(attribute) === src)
+  return files.some(i => i.getAttribute(attribute) === src)
 }
 
 /**
@@ -15,7 +15,7 @@ function isFileLoaded (src, type = 0) {
  * @param {String} src 文件地址
  * @param {Number} type 文件类型 0-js 1-css
  */
-function loadFile (src, type = 0) {
+function loadFile(src, type = 0) {
   return new Promise((resolve, reject) => {
     if (!isFileLoaded(src, type)) {
       const tagName = type === 0 ? 'script' : 'link'
@@ -38,7 +38,7 @@ function loadFile (src, type = 0) {
  * @param {Boolean} isSeries 是否串行获取 js 文件，否则并行获取，默认串行
  * @return {Promise<T>}
  */
-async function loadScript (src, isSeries = true) {
+async function loadScript(src, isSeries = true) {
   if (typeof src === 'string') {
     return loadFile(src, 0)
   }
@@ -57,7 +57,7 @@ async function loadScript (src, isSeries = true) {
  * 加载 css 文件
  * @param {String | String[]} src 文件地址
  */
-function loadStyle (src) {
+function loadStyle(src) {
   if (typeof src === 'string') {
     return loadFile(src, 1)
   }
