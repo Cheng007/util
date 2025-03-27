@@ -27,10 +27,11 @@ function findNode({ id, tree = [], idKey = 'id', childrenKey = 'children' } = {}
     if (item[idKey] === id) {
       return item
     }
-    const children = item[childrenKey]
+    const children = item[childrenKey] ?? []
     for (let i = children.length - 1; i >= 0; i--) {
       stack.unshift(children[i])
     }
   }
   return null
 }
+g
