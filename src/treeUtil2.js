@@ -20,15 +20,14 @@ function findPath({id, tree = [], idKey = 'id', childrenKey = 'children'} = {}) 
 }
 
 // 深度优先查找某节点
-// TODO:测试
-function findNode({ id, tree = [], idKey = 'id', childrenKey = 'children'} = {}) {
+function findNode({ id, tree = [], idKey = 'id', childrenKey = 'children' } = {}) {
   const stack = tree
   while (stack.length) {
     const item = stack.shift()
-    const children = item[childrenKey]
-    if (children[idKey] === id) {
-      return children
+    if (item[idKey] === id) {
+      return item
     }
+    const children = item[childrenKey]
     for (let i = children.length - 1; i >= 0; i--) {
       stack.unshift(children[i])
     }
