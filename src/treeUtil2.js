@@ -58,7 +58,7 @@ export function findNodeDFS({ id, tree = [], idKey = 'id', childrenKey = 'childr
     if (item[idKey] === id) {
       return item
     }
-    const children = item[childrenKey] ?? []
+    const children = item[childrenKey] || []
     for (let i = children.length - 1; i >= 0; i--) {
       stack.unshift(children[i])
     }
