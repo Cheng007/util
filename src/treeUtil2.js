@@ -49,7 +49,7 @@ export function findPathDFS({id, tree = [], idKey = 'id', childrenKey = 'childre
  *   { id: 1, children: [{ id: 2, children: [{ id: 3 }] }] },
  *   { id: 4 }
  * ];
- * findNode({ id: 3, tree }); // 返回 { id: 3 }
+ * findNodeDFS({ id: 3, tree }); // 返回 { id: 3 }
  */
 export function findNodeDFS({ id, tree = [], idKey = 'id', childrenKey = 'children' } = {}) {
   const stack = [...tree]
