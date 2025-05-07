@@ -248,48 +248,63 @@ export function parentToLeaf({ tree, parent, idKey = 'id', childrenKey = 'childr
   return leafNodes;
 }
 
-interface TreeNode {
-  [key: string]: any;
-  children?: TreeNode[];
-}
-
-interface TreeToFlatOptions {
-  tree?: TreeNode[];
-  idKey?: string;
-  childrenKey?: string;
-}
-
-function treeToFlat(options: TreeToFlatOptions = {}): TreeNode[] {
-  const {
-    tree = [],
-    idKey = 'id',
-    childrenKey = 'children'
-  } = options;
+/**
+ * 将树形结构数据转换为扁平数组（使用迭代实现）
+ * 
+ * @param {Object} params - 配置参数
+ * @param {Array} params.tree - 树形结构数据，默认为空数组
+ * @param {string} params.childrenKey - 子节点属性名，默认为 'children'
+ * @returns {Array} 扁平化后的数组
+ * 
+ * @example 基本使用示例
+ * const treeData = [
+ *   {
+ *     id: 1,
+ *     name: 'Node 1',
+ *     children: [
+ *       { id: 2, name: 'Node 1.1' },
+ *       { id: 3, name: 'Node 1.2' }
+ *     ]
+ *   },
+ *   {
+ *     id: 4,
+ *     name: 'Node 2'
+ *   }
+ * ];
+ * 
+ * const flatData = treeToFlat({ tree: treeData });
+ * console.log(flatData);
+ * // 输出:
+ * // [
+ * //   { id: 1, name: 'Node 1', children: [...] },
+ * //   { id: 2, name: 'Node 1.1' },
+ * //   { id: 3, name: 'Node 1.2' },
+ * //   { id: 4, name: 'Node 2' }
+ * // ]
+ * 
+ * @example 自定义子节点属性名
+ * const treeData = [
+ *   { id: 1, kids: [{ id: 2 }] }
+ * ];
+ * const flatData = treeToFlat({ tree: treeData, childrenKey: 'kids' });
+ */
+export function treeToFlat({
+  tree = [],
+  childrenKey = 'children'
+} = {}) {
+  const flatArray = [];
+  const stack = [...tree];
   
-  const flat: TreeNode[] = [];
-  const stack: { node: TreeNode; parentId: string }[] = [];
-  
-  // 初始节点入栈
-  tree.forEach(node => {
-    stack.push({ node, parentId: '' });
-  });
-  
-  while (stack.length > 0) {
-    const { node, parentId } = stack.pop()!;
+  while (stack.length) {
+    const node = stack.shift();
+    const children = node[childrenKey] || [];
     
-    // 添加父节点ID并推入结果数组
-    const newNode = { ...node, parentId };
-    flat.push(newNode);
-    
-    // 如果有子节点，将子节点入栈处理
-    const children = node[childrenKey];
-    if (children && children.length) {
-      // 反向入栈以保证处理顺序与原始顺序一致
-      for (let i = children.length - 1; i >= 0; i--) {
-        stack.push({ node: children[i], parentId: node[idKey] });
-      }
+    for (let i = children.length - 1; i >= 0; i--) {
+      stack.unshift(children[i]);
     }
+    
+    flatArray.push(node);
   }
   
-  return flat;
+  return flatArray;
 }
