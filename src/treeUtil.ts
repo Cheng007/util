@@ -25,6 +25,13 @@ interface ParentToLeafOptions<T extends object, K extends keyof T, C extends key
   getAllLeaf?: boolean;
 }
 
+interface FlatToTreeOptions<T> {
+  flat?: T[];
+  idKey?: string;
+  childrenKey?: string;
+  parentKey?: string;
+}
+
 /**
  * 深度优先搜索以查找树中某个节点的完整路径
  * @param {Object} options - 选项对象
@@ -366,4 +373,116 @@ export function treeToFlat<
   }
 
   return flatArray;
+}
+
+/**
+ * 将扁平数组转换为树形结构
+ * @template T 节点数据类型
+ * @param {Object} options 配置项
+ * @param {T[]} [options.flat=[]] 扁平数组数据
+ * @param {string} [options.idKey='id'] 节点唯一标识的属性名
+ * @param {string} [options.childrenKey='children'] 子节点集合的属性名
+ * @param {string} [options.parentKey='pid'] 父节点标识的属性名
+ * @returns {T[]} 树形结构数据
+ * 
+ * @example 基本使用示例
+ * // 输入数据
+ * const flatData = [
+ *   { id: 1, name: 'Node 1', pid: null },
+ *   { id: 2, name: 'Node 2', pid: 1 },
+ *   { id: 3, name: 'Node 3', pid: 1 },
+ *   { id: 4, name: 'Node 4', pid: 2 },
+ *   { id: 5, name: 'Node 5', pid: null },
+ *   { id: 6, name: 'Node 6', pid: 5 },
+ * ];
+ * 
+ * // 转换调用
+ * const treeData = flatToTree({ flat: flatData });
+ * 
+ * // 输出结果
+ * [
+ *   {
+ *     id: 1,
+ *     name: 'Node 1',
+ *     pid: null,
+ *     children: [
+ *       {
+ *         id: 2,
+ *         name: 'Node 2',
+ *         pid: 1,
+ *         children: [
+ *           { id: 4, name: 'Node 4', pid: 2, children: [] }
+ *         ]
+ *       },
+ *       { id: 3, name: 'Node 3', pid: 1, children: [] }
+ *     ]
+ *   },
+ *   {
+ *     id: 5,
+ *     name: 'Node 5',
+ *     pid: null,
+ *     children: [
+ *       { id: 6, name: 'Node 6', pid: 5, children: [] }
+ *     ]
+ *   }
+ * ]
+ * 
+ * @example 自定义键名示例
+ * // 使用不同的键名配置
+ * const treeData2 = flatToTree({
+ *   flat: [
+ *     { uid: 1, text: 'Item 1', parent: null },
+ *     { uid: 2, text: 'Item 2', parent: 1 }
+ *   ],
+ *   idKey: 'uid',
+ *   childrenKey: 'items',
+ *   parentKey: 'parent'
+ * });
+ * 
+ * // 输出结果
+ * [
+ *   {
+ *     uid: 1,
+ *     text: 'Item 1',
+ *     parent: null,
+ *     items: [
+ *       { uid: 2, text: 'Item 2', parent: 1, items: [] }
+ *     ]
+ *   }
+ * ]
+ */
+export function flatToTree<T extends Record<string, any>>({
+  flat = [],
+  idKey = 'id',
+  childrenKey = 'children',
+  parentKey = 'pid'
+}: FlatToTreeOptions<T> = {}): T[] {
+  // 节点映射表，用于快速查找节点
+  // key: 节点ID，value: 节点对象（包含初始化的子节点数组）
+  const nodeMap = new Map<any, T>();
+  
+  // 存储所有根节点
+  const roots: T[] = [];
+  
+  // 第一次遍历：初始化所有节点并存入映射表
+  for (const node of flat) {
+    nodeMap.set(node[idKey], { 
+      ...node, 
+      [childrenKey]: [] // 初始化子节点数组
+    });
+  }
+  
+  // 第二次遍历：构建树形结构
+  for (const node of nodeMap.values()) {
+    const parentId = node[parentKey];
+    
+    if (parentId === undefined || parentId === null) {
+      roots.push(node);
+    } else {
+      const parent = nodeMap.get(parentId);
+      parent ? parent[childrenKey].push(node) : roots.push(node);
+    }
+  }
+  
+  return roots;
 }
