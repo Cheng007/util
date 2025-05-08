@@ -1,3 +1,30 @@
+interface TreeOptions<T extends object, K extends keyof T, C extends keyof T> {
+  id: T[K];
+  tree?: T[];
+  idKey?: K;
+  childrenKey?: C;
+}
+
+interface TreeToFlatOptions<T extends object, C extends keyof T> {
+  tree: T[];
+  childrenKey?: C;
+}
+
+interface LeafToParentOptions<T extends object, K extends keyof T, C extends keyof T> {
+  tree: T[];
+  leafIds: T[K][];
+  idKey?: K;
+  childrenKey?: C;
+}
+
+interface ParentToLeafOptions<T extends object, K extends keyof T, C extends keyof T> {
+  tree: T[];
+  parentIds: T;
+  idKey?: K;
+  childrenKey?: C;
+  getAllLeaf?: boolean;
+}
+
 /**
  * 深度优先搜索以查找树中某个节点的完整路径
  * @param {Object} options - 选项对象
@@ -19,14 +46,20 @@
  *  { id: 3 }
  * ]
  */
-export function findPathDFS({id, tree = [], idKey = 'id', childrenKey = 'children'} = {}) {
-  const stack = tree.map(i => ({ node: i, path: [i] }))
-  while (stack.length > 0) {
-    const { node, path } = stack.shift();
+export function findPathDFS<
+  T extends { [key: string]: any },
+  K extends keyof T = 'id',
+  C extends keyof T = 'children'
+>(options: TreeOptions<T, K, C>): T[] {
+  const { id, tree = [], idKey = 'id', childrenKey = 'children' } = options
+  const stack: { node: T; path: T[] }[] = tree.map(node => ({ node, path: [node] }));
+
+  while (stack.length) {
+    const { node, path } = stack.shift()!;
     if (node[idKey] === id) {
       return path;
     }
-    const children = node[childrenKey] || [];
+    const children = (node[childrenKey] as T[] | undefined) || [];
     for (let i = children.length - 1; i >= 0; i--) {
       const child = children[i];
       stack.unshift({ node: child, path: [...path, child] });
@@ -51,14 +84,19 @@ export function findPathDFS({id, tree = [], idKey = 'id', childrenKey = 'childre
  * ];
  * findNodeDFS({ id: 3, tree }); // 返回 { id: 3 }
  */
-export function findNodeDFS({ id, tree = [], idKey = 'id', childrenKey = 'children' } = {}) {
+export function findNodeDFS<
+  T extends { [key: string]: any },
+  K extends keyof T = 'id',
+  C extends keyof T = 'children'
+>(options: TreeOptions<T, K, C>): T | null {
+  const { id, tree = [], idKey = 'id', childrenKey = 'children' } = options
   const stack = [...tree]
   while (stack.length) {
-    const item = stack.shift()
+    const item = stack.shift()!
     if (item[idKey] === id) {
       return item
     }
-    const children = item[childrenKey] || []
+    const children = (item[childrenKey] || []) as T[]
     for (let i = children.length - 1; i >= 0; i--) {
       stack.unshift(children[i])
     }
@@ -113,7 +151,12 @@ export function findNodeDFS({ id, tree = [], idKey = 'id', childrenKey = 'childr
  * // 输出结果为 [1]，因为所有叶子节点的父节点和祖父节点最终可以被一个根节点 1 替代
  * console.log(result);
  */
-export function leafToParent({ tree, leafIds, idKey = 'id', childrenKey = 'children' } = {}) {
+export function leafToParent<
+  T extends { [key: string]: any },
+  K extends keyof T = 'id',
+  C extends keyof T = 'children'
+>(options: LeafToParentOptions<T, K, C>): T[K][] {
+  const { tree, leafIds, idKey = 'id', childrenKey = 'children' } = options;
   const selected = new Set(leafIds);
   // 记录子节点到父节点的映射
   const parentMap = new Map();
@@ -123,9 +166,12 @@ export function leafToParent({ tree, leafIds, idKey = 'id', childrenKey = 'child
   // 建立父子关系和初始化计数
   const stack = [...tree];
   while (stack.length) {
-    const node = stack.pop();
-    if (node[childrenKey]) {
-      for (const child of node[childrenKey]) {
+    const node = stack.pop()!;
+    const children = node[childrenKey]
+    
+    if (children.length) {
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
         parentMap.set(child[idKey], node);
         stack.push(child);
       }
@@ -140,6 +186,7 @@ export function leafToParent({ tree, leafIds, idKey = 'id', childrenKey = 'child
     if (parent) {
       const count = childrenCount.get(parent[idKey]) - 1;
       childrenCount.set(parent[idKey], count);
+      // @ts-ignore
       if (count === 0) queue.push(parent);
     }
   }
@@ -147,10 +194,12 @@ export function leafToParent({ tree, leafIds, idKey = 'id', childrenKey = 'child
   // 处理可以替换的父节点
   while (queue.length) {
     const parent = queue.shift();
+    // @ts-ignore
     const parentId = parent[idKey];
     selected.add(parentId);
 
     // 移除所有子节点
+    // @ts-ignore
     for (const child of parent[childrenKey]) {
       selected.delete(child[idKey]);
     }
@@ -160,6 +209,7 @@ export function leafToParent({ tree, leafIds, idKey = 'id', childrenKey = 'child
     if (grandParent) {
       const count = childrenCount.get(grandParent[idKey]) - 1;
       childrenCount.set(grandParent[idKey], count);
+      // @ts-ignore
       if (count === 0) queue.push(grandParent);
     }
   }
@@ -208,31 +258,39 @@ export function leafToParent({ tree, leafIds, idKey = 'id', childrenKey = 'child
  * const result = parentToLeaf({ tree, parentIds });
  * console.log(result); // 输出: [4, 5, 6, 7]
  */
-export function parentToLeaf({ tree, parentIds, idKey = 'id', childrenKey = 'children', getAllLeaf = false } = {}) {
+export function parentToLeaf<
+  T extends { [key: string]: any },
+  K extends keyof T = 'id',
+  C extends keyof T = 'children'
+>(options: ParentToLeafOptions<T, K, C>): T[K][] {
+  const { tree, parentIds, idKey = 'id', childrenKey = 'children', getAllLeaf = false } = options
   const leafNodes = [];
+  // @ts-ignore
   const parentSet = new Set(parentIds || []);
   const stack = [...(tree || [])];
 
   while (stack.length) {
-    const node = stack.pop();
+    const node = stack.pop()!;
     const isParent = parentSet.has(node[idKey]);
 
     if (isParent) {
       // 如果是选中的父节点，展开其所有叶子节点
       const subStack = [node];
       while (subStack.length) {
-        const currentNode = subStack.pop();
+        const currentNode = subStack.pop()!;
         if (currentNode[childrenKey] && currentNode[childrenKey].length > 0) {
           // 有子节点，继续展开
           subStack.push(...currentNode[childrenKey].slice().reverse());
         } else {
           // 叶子节点
+          // @ts-ignore
           leafNodes.push(currentNode[idKey]);
         }
       }
     } else if (parentSet.size === 0 && getAllLeaf) {
       // 如果没有指定父节点，收集所有叶子节点
       if (!node[childrenKey] || node[childrenKey].length === 0) {
+        // @ts-ignore
         leafNodes.push(node[idKey]);
       } else {
         stack.push(...node[childrenKey].slice().reverse());
@@ -288,23 +346,24 @@ export function parentToLeaf({ tree, parentIds, idKey = 'id', childrenKey = 'chi
  * ];
  * const flatData = treeToFlat({ tree: treeData, childrenKey: 'kids' });
  */
-export function treeToFlat({
-  tree = [],
-  childrenKey = 'children'
-} = {}) {
-  const flatArray = [];
+export function treeToFlat<
+  T extends { [key: string]: any },
+  C extends keyof T = 'children'
+>(options: TreeToFlatOptions<T, C>): T[] {
+  const { tree = [], childrenKey = 'children' } = options
+  const flatArray: T[] = [];
   const stack = [...tree];
-  
+
   while (stack.length) {
-    const node = stack.shift();
-    const children = node[childrenKey] || [];
-    
+    const node = stack.shift()!;
+    const children = (node[childrenKey] || []) as T[];
+
     for (let i = children.length - 1; i >= 0; i--) {
       stack.unshift(children[i]);
     }
-    
+
     flatArray.push(node);
   }
-  
+
   return flatArray;
 }
